@@ -9,6 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 32768
+          swap-size-mb: 64
+
       - name: download repo
         uses: actions/checkout@v4
 
