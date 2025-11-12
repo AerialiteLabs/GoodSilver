@@ -76,6 +76,8 @@ if [ ! -f "$image_bin_file" ]; then
   unzip -j "$image_zip_file" -d "$data_dir"
 fi
 
+rm -f "$image_zip_file"
+
 image_variants="${special_boards[$board]}"
 
 if [ ! "$image_variants" ]; then
@@ -91,7 +93,7 @@ else
   for variant in $image_variants; do
     echo "copying recovery image (internal_disk=$variant)"
     out_file="$data_dir/quickrecovery_${board}_${variant}.bin"
-    cp "$image_bin_file" "$out_file"
+    mv "$image_bin_file" "$out_file"
 
     echo "building quickrecovery (internal_disk=$variant)"
     ./build_quickrecovery.sh -i "$out_file"
