@@ -95,7 +95,7 @@ else
   for variant in $image_variants; do
     echo "copying recovery image (internal_disk=$variant)"
     out_file="$data_dir/quickrecovery_${board}_${variant}.bin"
-    if [ "$amounts" = "" ]; then
+    if [ "$amounts" = "$count" ]; then
         mv "$image_bin_file" "$out_file"
     else
         cp "$image_bin_file" "$out_file"
