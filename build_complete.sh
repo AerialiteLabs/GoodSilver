@@ -50,8 +50,6 @@ for image in reversed(board["images"]):
     continue
   if image["channel"] != "stable-channel":
     continue
-  if int(major_ver) > 124:
-    continue
   print(image["url"])
   break
 else:
