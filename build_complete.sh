@@ -94,7 +94,7 @@ else
     cp "$image_bin_file" "$out_file"
 
     echo "building quickrecovery (internal_disk=$variant)"
-    ./build_quickrecovery.sh -i "$out_file" --internal_disk="$variant"
+    ./build_quickrecovery.sh -i "$out_file"
     echo "done! the finished image is located at $out_file"
   done
 fi

