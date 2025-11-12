@@ -149,9 +149,6 @@ detect_image_features() {
 		fail "Could not find image version."
 	fi
 	log_info "Detected version: $IMAGE_VERSION"
-	if [ $IMAGE_VERSION -gt 124 ]; then
-		fail "Image version is too new. Please use an image for r124 or older."
-	fi
 
 	TARGET_ARCH=x86
 	if [ -f "$MNT_ROOT/bin/bash" ]; then
@@ -456,27 +453,6 @@ else
 
 	if [ $(date +%s) -gt 2147483647 ]; then
 		PAST_2038=1
-	fi
-	if [ $IMAGE_VERSION -ge 86 ] && [ $LAYOUTV3 -eq 0 ]; then
-		ENABLE_POSTINST=1
-	fi
-	if [ $IMAGE_VERSION -ge 34 ]; then
-		if [ $SUPPORTS_BIG_DATE -eq 0 ] && [ $PAST_2038 -eq 1 ]; then
-			log_warn "Past 2038, will not enable postinst_sym"
-		else
-			ENABLE_POSTINST_SYM=1
-		fi
-	fi
-	if [ $IMAGE_VERSION -ge 26 ]; then
-		if [ $IMAGE_VERSION -lt 90 ]; then
-			ENABLE_PERSIST=1
-		fi
-		if [ $IMAGE_VERSION -lt 120 ]; then
-			ENABLE_BASIC=1
-			if [ $IMAGE_VERSION -ge 99 ]; then
-				BASIC_VERSION=2
-			fi
-		fi
 	fi
 fi
 
