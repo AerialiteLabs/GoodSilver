@@ -54,5 +54,5 @@ When QuickRecovery finishes, you will usually be able to skip the 5 minute devel
 
 - Emery/[emerwyi](https://github.com/emerwyi) - discovered quicksilver
 - Sophia/[soap-phia](https://github.com/soap-phia) - porting to badrecovery
-- OlyB/BinBashBanana - badrecovery itself
+- OlyB/[BinBashBanana](https://github.com/BinBashBanana) - badrecovery itself
 - lxrd/[SPIRAME](https://github.com/SPIRAME) - Sh1ttyExec
