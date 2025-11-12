@@ -7,6 +7,7 @@ jobs:
         board: [nissa, dedede, corsola, asurada, atlas, cherry, drallion, geralt, nocturne, rammus, rex, sarien, skyrim, staryu, eve]
 
     runs-on: ubuntu-latest
+    timeout-minutes: 360
     steps:
       - name: download repo
         uses: actions/checkout@v4
