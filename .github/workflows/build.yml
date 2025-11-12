@@ -24,6 +24,8 @@ jobs:
 
       - name: run build
         run: |
+          sudo apt autoremove --purge -y
+          sudo apt clean
           df -h /
           set -x
           sudo apt update
