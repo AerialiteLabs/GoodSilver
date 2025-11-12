@@ -90,13 +90,20 @@ if [ ! "$image_variants" ]; then
   echo "done! the finished image is located at $out_file"
 
 else
+  amounts=$(echo "${special_boards["nissa"]}" | wc -w)
+  count=1
   for variant in $image_variants; do
     echo "copying recovery image (internal_disk=$variant)"
     out_file="$data_dir/quickrecovery_${board}_${variant}.bin"
-    mv "$image_bin_file" "$out_file"
+    if [ "$amounts" = "" ]; then
+        mv "$image_bin_file" "$out_file"
+    else
+        cp "$image_bin_file" "$out_file"
+    fi
 
     echo "building quickrecovery (internal_disk=$variant)"
     ./build_quickrecovery.sh -i "$out_file"
     echo "done! the finished image is located at $out_file"
+    count=$((count+1))
   done
 fi
