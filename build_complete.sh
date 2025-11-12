@@ -16,13 +16,15 @@ declare -A special_boards=(
   ["cherry"]="mmcblk0"
   ["corsola"]="mmcblk0"
   ["guybrush"]="mmcblk0 nvme0n1"
-  ["nissa"]="mmcblk0 sda sdb"
+  ["nissa"]="mmcblk0"
+  ["nissa_2"]="sda sdb"
   ["rex"]="nvme0n1"
   ["skyrim"]="mmcblk0 nvme0n1"
   ["staryu"]="mmcblk0"
 )
 
 board="$1"
+if [ "$board" = "nissa_2" ]; then board=nissa; fi
 base_dir="$(realpath -m $(dirname "$0"))"
 data_dir="$base_dir/data"
 images_file="$data_dir/images.json"
