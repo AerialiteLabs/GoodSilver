@@ -9,9 +9,9 @@ set -eE
 SCRIPT_DATE="2024-10-07"
 
 echo "┌────────────────────────────────────────────────────────────────┐"
-echo "│ Welcome to the BadRecovery builder                             │"
-echo "│ Credits: OlyB                                                  │"
-echo "│ https://github.com/BinBashBanana/badrecovery                   │"
+echo "│ Welcome to the QuickRecovery builder                           │"
+echo "│ Credits: Emery, OlyB, Sophia                                   │"
+echo "│ https://github.com/AerialiteLabs/QuickRecovery                 │"
 echo "│ Script date: $SCRIPT_DATE                                        │"
 echo "└────────────────────────────────────────────────────────────────┘"
 
@@ -254,36 +254,6 @@ confirm_fourths_mode() {
 	fi
 }
 
-determine_type() {
-	local enabled_var
-	log_info "Supports postinst: $(fancy_bool $ENABLE_POSTINST)"
-	log_info "Supports postinst_sym: $(fancy_bool $ENABLE_POSTINST_SYM)"
-	log_info "Supports persist: $(fancy_bool $ENABLE_PERSIST)"
-	log_info "Supports basic: $(fancy_bool $ENABLE_BASIC)"
-	log_info "Supports unverified: $(fancy_bool $ENABLE_UNVERIFIED)"
-
-	if [ -n "$FLAGS_type" ]; then
-		enabled_var="ENABLE_$(echo "$FLAGS_type" | tr '[:lower:]' '[:upper:]')"
-		if [ "${!enabled_var}" -eq 1 ]; then
-			TYPE="$FLAGS_type"
-		else
-			fail "'$FLAGS_type' is not supported by this image."
-		fi
-	elif [ $ENABLE_UNVERIFIED -eq 1 ] && [ $IMAGE_VERSION -le 41 ]; then
-		TYPE=unverified
-	elif [ $ENABLE_POSTINST -eq 1 ]; then
-		TYPE=postinst
-	elif [ $ENABLE_POSTINST_SYM -eq 1 ] && [ $SUPPORTS_BIG_DATE -eq 1 ]; then
-		TYPE=postinst_sym
-	elif [ $ENABLE_PERSIST -eq 1 ]; then
-		TYPE=persist
-	elif [ $ENABLE_BASIC -eq 1 ]; then
-		TYPE=basic
-	else
-		fail "Nothing supported by this image :("
-	fi
-}
-
 mkpayload() {
 	local name file
 	if [ $PAYLOAD_ONLY -eq 1 ]; then
@@ -405,8 +375,6 @@ get_flags() {
 
 	DEFINE_string image "" "Path to recovery image" "i"
 
-	DEFINE_string type "" "Type (postinst, postinst_sym, persist, basic, or unverified)" "t"
-
 	DEFINE_string internal_disk "" "Internal disk for postinst_sym (mmcblk0, mmcblk1, nvme0n1, sda...)"
 
 	DEFINE_boolean yes "$FLAGS_FALSE" "Assume yes for all questions" "y"
@@ -437,10 +405,6 @@ get_flags() {
 		flags_help || :
 		exit 1
 	fi
-	case "$FLAGS_type" in
-		""|postinst|postinst_sym|persist|basic|unverified) : ;;
-		*) echo "Invalid type '$FLAGS_type'"; flags_help || :; exit 1 ;;
-	esac
 	if [ -n "$FLAGS_encstateful_payload" ] && [ "$FLAGS_type" != basic ]; then
 		echo "Must specify --type=basic when using --encstateful_payload"
 		flags_help || :
@@ -520,185 +484,32 @@ OVERFLOW=1
 ROOTA_CHUNKS=1
 IMAGE_STATEFUL_PAYLOAD=
 
-determine_type
 log_info "Using type: $TYPE"
-case "$TYPE" in
-	postinst)
-		TARGET_ROOTA_SIZE=$((64 * 1024 * 1024)) # 64 MiB
-		IMAGE_STATEFUL_SIZE=$((4 * 1024 * 1024)) # 4 MiB
-		log_info "Creating ROOT-A payload"
-		TARGET_ROOTA_PAYLOAD=$(mkpayload root-a)
-		OVERFLOW_SIZE="$TARGET_ROOTA_SIZE"
-		OVERFLOW_PAYLOAD="$TARGET_ROOTA_PAYLOAD"
-		[ $PAYLOAD_ONLY -eq 1 ] || TEMPFILES+=("$TARGET_ROOTA_PAYLOAD")
-		truncate -s "$TARGET_ROOTA_SIZE" "$TARGET_ROOTA_PAYLOAD"
-		setup_roota "$TARGET_ROOTA_PAYLOAD"
-		;;
-	postinst_sym)
-		TARGET_ROOTA_SIZE=$((16 * 1024 * 1024)) # 16 MiB
-		TARGET_STATEFUL_SIZE=$((4 * 1024 * 1024)) # 4 MiB
-		LVM_STATEFUL_SIZE=$((8 * 1024 * 1024)) # 8 MiB
-		IMAGE_STATEFUL_SIZE=$((32 * 1024 * 1024)) # 32 MiB
-		determine_internal_disk
-		TARGET_DEVICE=$(format_part_number "/dev/$INTERNAL_DISK" 3)
-		log_info "Creating ROOT-A payload"
-		TARGET_ROOTA_PAYLOAD=$(mkpayload root-a)
-		[ $PAYLOAD_ONLY -eq 1 ] || TEMPFILES+=("$TARGET_ROOTA_PAYLOAD")
-		truncate -s "$TARGET_ROOTA_SIZE" "$TARGET_ROOTA_PAYLOAD"
-		setup_roota "$TARGET_ROOTA_PAYLOAD"
+OVERFLOW=0
+TARGET_ROOTA_SIZE=$((64 * 1024 * 1024)) # 64 MiB
+IMAGE_STATEFUL_SIZE=$((4 * 1024 * 1024)) # 4 MiB
+log_info "Creating ROOT-A payload"
+TARGET_ROOTA_PAYLOAD=$(mkpayload root-a)
+MAIN_PAYLOAD_SIZE="$TARGET_ROOTA_SIZE"
+MAIN_PAYLOAD="$TARGET_ROOTA_PAYLOAD"
+[ $PAYLOAD_ONLY -eq 1 ] || TEMPFILES+=("$TARGET_ROOTA_PAYLOAD")
+truncate -s "$TARGET_ROOTA_SIZE" "$TARGET_ROOTA_PAYLOAD"
 
-		MNT_STATE=$(mktemp -d)
-		log_info "Creating stateful payload"
-		TARGET_STATEFUL_PAYLOAD=$(mkpayload stateful)
-		[ $PAYLOAD_ONLY -eq 1 ] || TEMPFILES+=("$TARGET_STATEFUL_PAYLOAD")
-		truncate -s "$TARGET_STATEFUL_SIZE" "$TARGET_STATEFUL_PAYLOAD"
-		suppress mkfs "$TARGET_STATEFUL_PAYLOAD"
-		mount -o loop "$TARGET_STATEFUL_PAYLOAD" "$MNT_STATE"
-		# ensure compatibility with both before and after https://crrev.com/c/2434286
-		mkdir -p "$MNT_STATE"/unencrypted/import_extensions/import_extensions
-		ln -s "$TARGET_DEVICE" "$MNT_STATE"/unencrypted/import_extensions/image
-		ln -s "$TARGET_DEVICE" "$MNT_STATE"/unencrypted/import_extensions/import_extensions/image
-		umount "$MNT_STATE"
+src_dir="$SCRIPT_DIR"/quickrecovery
+[ -d "$src_dir" ] || fail "Could not find payload '$src_dir'"
+src_busybox="$SCRIPT_DIR"/busybox/"$TARGET_ARCH"/busybox
+[ -f "$src_busybox" ] || fail "Could not find busybox '$src_busybox'"
+suppress mkfs "$TARGET_ROOTA_PAYLOAD"
+MNT_ROOT=$(mktemp -d)
+mount -o loop "$TARGET_ROOTA_PAYLOAD" "$MNT_ROOT"
 
-		if [ $LVM_STATEFUL -eq 1 ]; then
-			log_info "Creating LVM stateful"
-			LVM_STATEFUL_PAYLOAD=$(mkpayload lvm-stateful)
-			OVERFLOW_SIZE="$LVM_STATEFUL_SIZE"
-			OVERFLOW_PAYLOAD="$LVM_STATEFUL_PAYLOAD"
-			[ $PAYLOAD_ONLY -eq 1 ] || TEMPFILES+=("$LVM_STATEFUL_PAYLOAD")
-			truncate -s "$LVM_STATEFUL_SIZE" "$LVM_STATEFUL_PAYLOAD"
-			LOOPDEV2=$(losetup -f)
-			losetup "$LOOPDEV2" "$LVM_STATEFUL_PAYLOAD"
-			suppress lvm pvcreate -ff --yes "$LOOPDEV2"
-			VG_DEV=$(mktemp -u /dev/XXXXXXXXXX)
-			VG_NAME=$(basename "$VG_DEV")
-			suppress lvm vgcreate -p 1 "$VG_NAME" "$LOOPDEV2"
-			suppress lvm vgchange -ay "$VG_NAME"
-			suppress lvm lvcreate -Z n -L "${TARGET_STATEFUL_SIZE}B" -n unencrypted "$VG_NAME"
-			suppress lvm vgmknodes || :
-			LV_DEV="$VG_DEV"/unencrypted
-			[ -b "$LV_DEV" ] || fail "Could not create LVM stateful"
-			suppress dd count=1 bs="$TARGET_STATEFUL_SIZE" if="$TARGET_STATEFUL_PAYLOAD" of="$LV_DEV" conv=notrunc
-			sync
-			suppress lvm vgchange -an "$VG_NAME"
-			suppress lvm vgmknodes || :
-			VG_NAME=
-			losetup -d "$LOOPDEV2"
-			LOOPDEV2=
-		else
-			OVERFLOW_SIZE="$TARGET_STATEFUL_SIZE"
-			OVERFLOW_PAYLOAD="$TARGET_STATEFUL_PAYLOAD"
-		fi
+mkdir -p "$MNT_ROOT"/usr/sbin "$MNT_ROOT"/bin "$MNT_ROOT"/dev "$MNT_ROOT"/proc "$MNT_ROOT"/run "$MNT_ROOT"/sys "$MNT_ROOT"/tmp "$MNT_ROOT"/var
+cp "$src_busybox" "$MNT_ROOT"/bin
+cp -R "$src_dir"/* "$MNT_ROOT"/usr/sbin
+chmod +x "$MNT_ROOT"/bin/busybox "$MNT_ROOT"/usr/sbin/chromeos-recovery
 
-		log_info "Creating image stateful payload"
-		IMAGE_STATEFUL_PAYLOAD=$(mkpayload image-stateful)
-		[ $PAYLOAD_ONLY -eq 1 ] || TEMPFILES+=("$IMAGE_STATEFUL_PAYLOAD")
-		truncate -s "$IMAGE_STATEFUL_SIZE" "$IMAGE_STATEFUL_PAYLOAD"
-		suppress mkfs "$IMAGE_STATEFUL_PAYLOAD"
-		mount -o loop "$IMAGE_STATEFUL_PAYLOAD" "$MNT_STATE"
-		mkdir -p "$MNT_STATE"/unencrypted/import_extensions
-		cp "$TARGET_ROOTA_PAYLOAD" "$MNT_STATE"/unencrypted/import_extensions/image
-		touch -t 244605100000 "$MNT_STATE"/unencrypted/import_extensions/image
-		umount "$MNT_STATE"
-		rmdir "$MNT_STATE"
-		;;
-	persist|basic)
-		ENCSTATEFUL_SIZE=$((32 * 1024 * 1024)) # 32 MiB
-		TARGET_STATEFUL_SIZE=$((64 * 1024 * 1024)) # 64 MiB
-		IMAGE_STATEFUL_SIZE=$((4 * 1024 * 1024)) # 4 MiB
-		if [ $IMAGE_VERSION -lt 68 ]; then
-			log_warn "persist/basic is untested on versions below 68 and may not work."
-		fi
-		if [ $ENABLE_POSTINST -eq 1 ] && [ $PAYLOAD_ONLY -eq 0 ]; then
-			# fourths mode
-			confirm_fourths_mode
-			ROOTA_CHUNKS=$CHUNKS
-		fi
-		# todo: maybe support LVM stateful here?
-		log_info "Creating stateful payload"
-		TARGET_STATEFUL_PAYLOAD=$(mkpayload stateful)
-		OVERFLOW_SIZE="$TARGET_STATEFUL_SIZE"
-		OVERFLOW_PAYLOAD="$TARGET_STATEFUL_PAYLOAD"
-		[ $PAYLOAD_ONLY -eq 1 ] || TEMPFILES+=("$TARGET_STATEFUL_PAYLOAD")
-		truncate -s "$TARGET_STATEFUL_SIZE" "$TARGET_STATEFUL_PAYLOAD"
-		suppress mkfs -L H-STATE "$TARGET_STATEFUL_PAYLOAD"
-		MNT_STATE=$(mktemp -d)
-		MNT_ENCSTATEFUL=$(mktemp -d)
-		mount -o loop "$TARGET_STATEFUL_PAYLOAD" "$MNT_STATE"
-
-		log_info "Setting up encstateful"
-		truncate -s "$ENCSTATEFUL_SIZE" "$MNT_STATE"/encrypted.block
-		ENCSTATEFUL_DEV=$(mktemp -u /dev/mapper/XXXXXXXXXX)
-		ENCSTATEFUL_NAME=$(basename "$ENCSTATEFUL_DEV")
-		ENCSTATEFUL_KEY=$(mktemp)
-		TEMPFILES+=("$ENCSTATEFUL_KEY")
-		key_cs > "$ENCSTATEFUL_KEY"
-		cryptsetup open --type plain --cipher aes-cbc-essiv:sha256 --key-size 256 --key-file "$ENCSTATEFUL_KEY" "$MNT_STATE"/encrypted.block "$ENCSTATEFUL_NAME"
-
-		log_info "Creating encstateful"
-		suppress mkfs "$ENCSTATEFUL_DEV"
-		mount "$ENCSTATEFUL_DEV" "$MNT_ENCSTATEFUL"
-
-		if [ -n "$FLAGS_encstateful_payload" ]; then
-			ENCSTATEFUL_TAR="$FLAGS_encstateful_payload"
-		elif [ $BASIC_VERSION -eq 2 ]; then
-			ENCSTATEFUL_TAR="$SCRIPT_DIR"/encstateful/devicesettings.tar.gz
-		else
-			ENCSTATEFUL_TAR="$SCRIPT_DIR"/encstateful/whitelist.tar.gz
-		fi
-		[ -f "$ENCSTATEFUL_TAR" ] || fail "Could not find encstateful payload '$ENCSTATEFUL_TAR'"
-		tar -xf "$ENCSTATEFUL_TAR" -C "$MNT_ENCSTATEFUL"
-
-		if [ "$TYPE" = persist ]; then
-			setup_persist
-		fi
-
-		key_wrapped > "$MNT_STATE"/encrypted.needs-finalization
-		if [ "$FLAGS_devmode" = "$FLAGS_TRUE" ]; then
-			touch "$MNT_STATE"/.developer_mode
-		fi
-		if [ "$FLAGS_debug" = "$FLAGS_TRUE" ]; then
-			echo "Stateful:"
-			tree -a "$MNT_STATE" || :
-			echo "Encstateful:"
-			tree -a "$MNT_ENCSTATEFUL" || :
-		fi
-
-		umount "$MNT_ENCSTATEFUL"
-		rmdir "$MNT_ENCSTATEFUL"
-		cryptsetup close "$ENCSTATEFUL_NAME"
-		umount "$MNT_STATE"
-		rmdir "$MNT_STATE"
-		;;
-	unverified)
-		OVERFLOW=0
-		TARGET_ROOTA_SIZE=$((64 * 1024 * 1024)) # 64 MiB
-		IMAGE_STATEFUL_SIZE=$((4 * 1024 * 1024)) # 4 MiB
-		log_info "Creating ROOT-A payload"
-		TARGET_ROOTA_PAYLOAD=$(mkpayload root-a)
-		MAIN_PAYLOAD_SIZE="$TARGET_ROOTA_SIZE"
-		MAIN_PAYLOAD="$TARGET_ROOTA_PAYLOAD"
-		[ $PAYLOAD_ONLY -eq 1 ] || TEMPFILES+=("$TARGET_ROOTA_PAYLOAD")
-		truncate -s "$TARGET_ROOTA_SIZE" "$TARGET_ROOTA_PAYLOAD"
-
-		src_dir="$SCRIPT_DIR"/unverified
-		[ -d "$src_dir" ] || fail "Could not find unverified payload '$src_dir'"
-		src_busybox="$SCRIPT_DIR"/busybox/"$TARGET_ARCH"/busybox
-		[ -f "$src_busybox" ] || fail "Could not find busybox '$src_busybox'"
-		suppress mkfs "$TARGET_ROOTA_PAYLOAD"
-		MNT_ROOT=$(mktemp -d)
-		mount -o loop "$TARGET_ROOTA_PAYLOAD" "$MNT_ROOT"
-
-		mkdir -p "$MNT_ROOT"/usr/sbin "$MNT_ROOT"/bin "$MNT_ROOT"/dev "$MNT_ROOT"/proc "$MNT_ROOT"/run "$MNT_ROOT"/sys "$MNT_ROOT"/tmp "$MNT_ROOT"/var
-		cp "$src_busybox" "$MNT_ROOT"/bin
-		cp -R "$src_dir"/* "$MNT_ROOT"/usr/sbin
-		chmod +x "$MNT_ROOT"/bin/busybox "$MNT_ROOT"/usr/sbin/chromeos-recovery
-
-		umount "$MNT_ROOT"
-		rmdir "$MNT_ROOT"
-		;;
-	*) fail "how did we get here?" ;;
-esac
+umount "$MNT_ROOT"
+rmdir "$MNT_ROOT"
 
 if [ $PAYLOAD_ONLY -eq 0 ]; then
 	suppress sgdisk -e "$IMAGE" 2>&1 | sed 's/\a//g'
