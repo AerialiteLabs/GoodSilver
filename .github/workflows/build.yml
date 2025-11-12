@@ -24,9 +24,10 @@ jobs:
 
       - name: run build
         run: |
+          df -h /
           set -x
-          sudo apt-get update
-          sudo apt-get install -y pv
+          sudo apt update
+          sudo apt install -y pv
           sudo QUIET=1 ./build_complete.sh "${{ matrix.board }}" || sudo QUIET=1 ./build_complete.sh "${{ matrix.board }}" || sudo rm data/quickrecovery_${{ matrix.board }}.bin
       - name: upload img
         uses: actions/upload-artifact@v4
