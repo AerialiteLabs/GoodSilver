@@ -1,28 +1,44 @@
+name: build
 on: [push]
 
 jobs:
   build:
+    permissions:
+      contents: write
+
     strategy: 
       matrix:
         board: [nissa]
 
     runs-on: ubuntu-latest
     timeout-minutes: 360
+
     steps:
       - name: download repo
         uses: actions/checkout@v4
 
-      - name: run build
+      - name: run full build
         run: |
           df -h /
           set -x
           sudo apt update
           sudo apt install -y pv
           sudo QUIET=1 ./build_complete.sh "${{ matrix.board }}" || sudo QUIET=1 ./build_complete.sh "${{ matrix.board }}" || sudo rm data/quickrecovery_${{ matrix.board }}.bin
+
       - name: upload img
         uses: actions/upload-artifact@v4
         with:
           name: quickrecovery_${{ matrix.board }}
           path: data/quickrecovery_*.bin
-
           compression-level: 7
+
+      - name: run simple build
+        run: |
+          sudo ./build.sh
+
+      - name: create release
+        uses: ading2210/gh-large-releases@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          draft: true
+          files: out/*.zip
