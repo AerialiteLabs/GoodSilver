@@ -46,8 +46,7 @@ The recovery image is now modified, and is ready to be flashed to a USB drive or
 4. Enter Developer mode [Ctrl+D].
 5. Enter recovery mode again by pressing [Esc+Ref+Pwr]
 6. Plug in the prepared USB drive or SD card. QuickRecovery will start in only a few seconds if you've done everything correctly. If not, turn off developer mode and try again from the start
-
-When QuickRecovery finishes, you will usually be able to skip the 5 minute developer mode delay by immediately switching back into recovery mode [Esc+Ref+Pwr] to get to developer mode.
+7. Go through setup, you should be unenrolled!!
 
 ## Credits
 
