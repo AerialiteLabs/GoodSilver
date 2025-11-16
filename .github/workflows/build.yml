@@ -22,8 +22,7 @@ jobs:
           sudo apt update
           sudo apt install -y pv
           sudo QUIET=1 ./build_complete.sh "${{ matrix.board }}" \
-            || sudo QUIET=1 ./build_complete.sh "${{ matrix.board }}" \
-            || sudo rm data/quickrecovery_${{ matrix.board }}.bin
+            || sudo QUIET=1 ./build_complete.sh "${{ matrix.board }"
 
       - name: upload
         uses: ading2210/gh-large-releases@v1
@@ -32,4 +31,5 @@ jobs:
           draft: true
           files: |
             data/quickrecovery_${{ matrix.board }}.bin
+
 
