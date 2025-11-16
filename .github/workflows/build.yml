@@ -1,3 +1,5 @@
+on: [push]
+
 jobs:
   build:
     strategy:
@@ -7,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     permissions:
-      contents: write
+      contents: write    # needed to create/upload release assets
 
     steps:
       - name: checkout repo
@@ -23,7 +25,14 @@ jobs:
             || sudo QUIET=1 ./build_complete.sh "${{ matrix.board }}" \
             || sudo rm data/quickrecovery_${{ matrix.board }}.bin
 
-      - name: upload
+      - name: upload artifact (optional)
+        uses: actions/upload-artifact@v4
+        with:
+          name: quickrecovery_${{ matrix.board }}
+          path: data/quickrecovery_*.bin
+          compression-level: 7
+
+      - name: create large-file release
         uses: ading2210/gh-large-releases@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
