@@ -40,7 +40,7 @@ The recovery image is now modified, and is ready to be flashed to a USB drive or
 
 ### Running on ChromeOS device (this is an example utilizing Sh1ttyExec by lxrd)
 
-1. Powerwash the device by pressing [Esc+Ref+Pwr]
+1. Powerwash the device by pressing [Ctrl+Alt+Shift+R]
 2. Start enrolling the device then open the powerwash menu [Ctrl+Alt+Shift+R] and wait till it crashes back to OOBE ('Get Started' screen)
 3. Try enrolling again but the moment your chromebook says 'Enterprise Enrollment', enter recovery mode [Esc+Ref+Pwr].
 4. Enter Developer mode [Ctrl+D].
