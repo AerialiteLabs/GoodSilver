@@ -141,7 +141,7 @@ fi
 
 restart() {
 	crossystem disable_dev_request=1
-	echo "Finished! rebooting..."
+	echo "rebooting..."
 	sleep 1
 	reboot -f
 }
@@ -151,7 +151,7 @@ while true; do
 	clear
 	echo "(1) Unenroll/Deprovision device"
 	echo "(2) Re-Enroll/Reprovision device"
-	echo "(3) Re-Enroll/Reprovision device"
+	echo "(3) Reboot"
 	read -p "Select an option: " option
 
 	case "$option" in
