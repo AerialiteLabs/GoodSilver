@@ -15,9 +15,8 @@ Downloads are located at [https://unenrollment.com/QuickRecovery](https://unenro
 
 ### Building an image
 
-First, you must download an official recovery image for your device.
+First, you must download an official r124 recovery image for your device.
 You can download them from [ChromiumDash](https://chromiumdash.appspot.com/serving-builds?deviceCategory=Chrome%20OS) or [cros.download](https://cros.download/recovery).  
-See [modes of operation](#modes-of-operation) for which version you'll need, usually r124 or older.
 Be sure you've downloaded the correct image for your device.
 
 Make sure to unzip the recovery image before proceeding to the next step!
