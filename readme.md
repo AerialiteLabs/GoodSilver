@@ -38,14 +38,14 @@ The script may prompt you to install required dependencies.
 
 The recovery image is now modified, and is ready to be flashed to a USB drive or SD card.
 
-### Running on ChromeOS device
+### Running on ChromeOS device (this is an example utilizing Sh1ttyExec by lxrd)
 
 1. Powerwash the device by pressing [Esc+Ref+Pwr]
-2. Start enrolling the device then open powerwash menu [Ctrl+Alt+Shift+R] and wait till it crashes back to OOBE ('Get Started' screen)
-3. Try enrolling again but the moment your chromebook says 'Enterprise Enrollment', powerwash [Esc+Ref+Pwr].
-4. Enter Developer mode [Ctrl+D]. If it does not work, you messed something up.
-1. Powerwash the device again by pressing [Esc+Ref+Pwr]
-5. Plug in the prepared USB drive or SD card. QuickRecovery will start in only a few seconds if you've done everything correctly.
+2. Start enrolling the device then open the powerwash menu [Ctrl+Alt+Shift+R] and wait till it crashes back to OOBE ('Get Started' screen)
+3. Try enrolling again but the moment your chromebook says 'Enterprise Enrollment', enter recovery mode [Esc+Ref+Pwr].
+4. Enter Developer mode [Ctrl+D].
+5. Enter recovery mode again by pressing [Esc+Ref+Pwr]
+6. Plug in the prepared USB drive or SD card. QuickRecovery will start in only a few seconds if you've done everything correctly. If not, turn off developer mode and try again from the start
 
 When QuickRecovery finishes, you will usually be able to skip the 5 minute developer mode delay by immediately switching back into recovery mode [Esc+Ref+Pwr] to get to developer mode.
 
