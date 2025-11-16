@@ -4,7 +4,7 @@ jobs:
   build:
     strategy: 
       matrix:
-        board: [nissa, nissa_2, dedede, corsola, asurada, atlas, cherry, drallion, geralt, nocturne, rammus, rex, sarien, skyrim, staryu, eve]
+        board: [nissa]
 
     runs-on: ubuntu-latest
     timeout-minutes: 360
@@ -24,4 +24,5 @@ jobs:
         with:
           name: quickrecovery_${{ matrix.board }}
           path: data/quickrecovery_*.bin
+
           compression-level: 7
