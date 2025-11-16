@@ -7,7 +7,7 @@ QuickRecovery is a port of [QuickSilver](https://unenrollment.com) to [BadRecove
 You will need:
 - A USB drive or SD card (8 GB or larger)
 - Something to flash the image (dd, rufus, chromebook recovery utility, etc.)
-- A ChromeOS device that has not received the patch (see [patch](#patch))
+- A ChromeOS device that is below r143
 
 ### Downloads
 
