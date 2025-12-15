@@ -1,4 +1,4 @@
-# GoodSilver
+![GoodSilver logo](/logo.svg)
 
 GoodSilver is a port of [QuickSilver](https://unenrollment.com) to [BadRecovery](https://github.com/BinBashBanana/BadRecovery) so devices that cannot boot shims can unenroll with QuickSilver.
 
