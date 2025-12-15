@@ -14,7 +14,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 32768
+          root-reserve-mb: 40960
           swap-size-mb: 64
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -28,6 +28,8 @@ jobs:
       - name: run build
         run: |
           set -x
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
           sudo apt-get update
           sudo apt-get install -y pv aria2
 
