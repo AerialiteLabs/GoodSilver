@@ -1,6 +1,6 @@
-# QuickRecovery
+# GoodSilver
 
-QuickRecovery is a port of [QuickSilver](https://unenrollment.com) to [BadRecovery](https://github.com/BinBashBanana/BadRecovery) so devices that cannot boot shims can unenroll with QuickSilver.
+GoodSilver is a port of [QuickSilver](https://unenrollment.com) to [BadRecovery](https://github.com/BinBashBanana/BadRecovery) so devices that cannot boot shims can unenroll with QuickSilver.
 
 ## How to use
 
@@ -11,7 +11,7 @@ You will need:
 
 ### Downloads
 
-Downloads are located at [https://unenrollment.com/QuickRecovery](https://unenrollment.com/QuickRecovery)
+Downloads are located at [https://unenrollment.com/GoodSilver](https://unenrollment.com/GoodSilver)
 
 ### Building an image
 
@@ -25,12 +25,12 @@ Next, you must modify the recovery image using the script included with this rep
 
 To get the script, run these commands on a linux machine:
 ```bash
-git clone https://github.com/AerialiteLabs/quickrecovery && cd quickrecovery
+git clone https://github.com/AerialiteLabs/GoodSilver && cd GoodSilver
 ```
 
 To modify a recovery image using the script, run
 ```bash
-sudo ./build_quickrecovery.sh -i <image.bin>
+sudo ./build_goodsilver.sh -i <image.bin>
 ```
 (Replace `<image.bin>` with the path to your recovery image bin.)
 
@@ -45,7 +45,7 @@ The recovery image is now modified, and is ready to be flashed to a USB drive or
 3. Try enrolling again but the moment your chromebook says 'Enterprise Enrollment', enter recovery mode [Esc+Ref+Pwr].
 4. Enter Developer mode [Ctrl+D].
 5. Enter recovery mode again by pressing [Esc+Ref+Pwr]
-6. Plug in the prepared USB drive or SD card. QuickRecovery will start in only a few seconds if you've done everything correctly. If not, turn off developer mode and try again from the start
+6. Plug in the prepared USB drive or SD card. GoodSilver will start in only a few seconds if you've done everything correctly. If not, turn off developer mode and try again from the start
 7. Go through setup, you should be unenrolled!!
 
 ## Credits

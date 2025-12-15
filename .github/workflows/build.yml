@@ -31,20 +31,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y pv aria2
 
-          sudo QUIET=1 ./build_complete.sh "${{ matrix.board }}" || sudo QUIET=1 ./build_complete.sh "${{ matrix.board }}" || sudo rm data/quickrecovery_${{ matrix.board }}.bin
+          sudo QUIET=1 ./build_complete.sh "${{ matrix.board }}" || sudo QUIET=1 ./build_complete.sh "${{ matrix.board }}" || sudo rm data/goodsilver_${{ matrix.board }}.bin
 
       - name: upload disk image
         uses: actions/upload-artifact@v4
         with:
-          name: quickrecovery_${{ matrix.board }}
-          path: data/quickrecovery_*.bin
+          name: goodsilver_${{ matrix.board }}
+          path: data/goodsilver_*.bin
           compression-level: 7
 
       - name: compress disk image
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           set -x
-          for image in "data/quickrecovery_${{ matrix.board }}"*.bin; do
+          for image in "data/goodsilver_${{ matrix.board }}"*.bin; do
             zip_file="${image%.bin}.zip"
             sudo zip -9 "$zip_file" "$image"
           done
@@ -54,4 +54,4 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           draft: true
-          files: data/quickrecovery_*.zip
+          files: data/goodsilver_*.zip

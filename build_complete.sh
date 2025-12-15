@@ -84,11 +84,11 @@ image_variants="${special_boards[$board]}"
 
 if [ ! "$image_variants" ]; then
   echo "copying recovery image"
-  out_file="$data_dir/quickrecovery_$board.bin"
+  out_file="$data_dir/goodsilver_$board.bin"
   cp "$image_bin_file" "$out_file"
 
-  echo "building quickrecovery"
-  ./build_quickrecovery.sh -i "$out_file"
+  echo "building goodsilver"
+  ./build_goodsilver.sh -i "$out_file"
   echo "done! the finished image is located at $out_file"
 
 else
@@ -96,15 +96,15 @@ else
   count=1
   for variant in $image_variants; do
     echo "copying recovery image (internal_disk=$variant)"
-    out_file="$data_dir/quickrecovery_${board}_${variant}.bin"
+    out_file="$data_dir/goodsilver_${board}_${variant}.bin"
     if [ "$amounts" = "$count" ]; then
         mv "$image_bin_file" "$out_file"
     else
         cp "$image_bin_file" "$out_file"
     fi
 
-    echo "building quickrecovery (internal_disk=$variant)"
-    ./build_quickrecovery.sh -i "$out_file"
+    echo "building goodsilver (internal_disk=$variant)"
+    ./build_goodsilver.sh -i "$out_file"
     echo "done! the finished image is located at $out_file"
     count=$((count+1))
   done

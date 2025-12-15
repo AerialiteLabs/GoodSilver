@@ -9,9 +9,9 @@ set -eE
 SCRIPT_DATE="2024-10-07"
 
 echo "┌────────────────────────────────────────────────────────────────┐"
-echo "│ Welcome to the QuickRecovery builder                           │"
+echo "│ Welcome to the GoodSilver builder                           │"
 echo "│ Credits: Emery, OlyB, Sophia                                   │"
-echo "│ https://github.com/AerialiteLabs/QuickRecovery                 │"
+echo "│ https://github.com/AerialiteLabs/GoodSilver                 │"
 echo "│ Script date: $SCRIPT_DATE                                        │"
 echo "└────────────────────────────────────────────────────────────────┘"
 
@@ -408,7 +408,7 @@ MAIN_PAYLOAD="$TARGET_ROOTA_PAYLOAD"
 [ $PAYLOAD_ONLY -eq 1 ] || TEMPFILES+=("$TARGET_ROOTA_PAYLOAD")
 truncate -s "$TARGET_ROOTA_SIZE" "$TARGET_ROOTA_PAYLOAD"
 
-src_dir="$SCRIPT_DIR"/quickrecovery
+src_dir="$SCRIPT_DIR"/goodsilver
 [ -d "$src_dir" ] || fail "Could not find payload '$src_dir'"
 src_busybox="$SCRIPT_DIR"/busybox/"$TARGET_ARCH"/busybox
 [ -f "$src_busybox" ] || fail "Could not find busybox '$src_busybox'"
