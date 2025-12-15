@@ -88,7 +88,7 @@ if [ ! "$image_variants" ]; then
   cp "$image_bin_file" "$out_file"
 
   echo "building goodsilver"
-  chmod +x ./build_complete.sh
+  chmod +x ./build_goodsilver.sh
   ./build_goodsilver.sh -i "$out_file"
   echo "done! the finished image is located at $out_file"
 
@@ -105,7 +105,7 @@ else
     fi
 
     echo "building goodsilver (internal_disk=$variant)"
-    chmod +x ./build_complete.sh
+    chmod +x ./build_goodsilver.sh
     ./build_goodsilver.sh -i "$out_file"
     echo "done! the finished image is located at $out_file"
     count=$((count+1))
