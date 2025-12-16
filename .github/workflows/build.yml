@@ -1,4 +1,7 @@
-on: [push]
+name: Build Shims (GoodSilver)
+
+on:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -57,4 +60,5 @@ jobs:
         with:
           draft: true
           files: data/goodsilver_*.zip
+
 
