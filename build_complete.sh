@@ -99,9 +99,9 @@ else
     echo "copying recovery image (internal_disk=$variant)"
     out_file="$data_dir/goodsilver_${board}_${variant}.bin"
     if [ "$amounts" = "$count" ]; then
-        mv "$image_bin_file" "$out_file"
+        mv "$image_bin_file" "$out_file" || continue
     else
-        cp "$image_bin_file" "$out_file"
+        cp "$image_bin_file" "$out_file" || continue
     fi
 
     echo "building goodsilver (internal_disk=$variant)"
