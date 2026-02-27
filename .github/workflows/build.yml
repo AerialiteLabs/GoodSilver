@@ -2,6 +2,9 @@ name: Build Shims (GoodSilver)
 
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   build:
@@ -60,5 +63,6 @@ jobs:
         with:
           draft: true
           files: data/goodsilver_*.zip
+
 
 
