@@ -38,16 +38,6 @@ The script may prompt you to install required dependencies.
 
 The recovery image is now modified, and is ready to be flashed to a USB drive or SD card.
 
-### Running on ChromeOS device (this is an example utilizing Sh1ttyExec by lxrd)
-
-1. Powerwash the device by pressing [Ctrl+Alt+Shift+R]
-2. Start enrolling the device then open the powerwash menu [Ctrl+Alt+Shift+R] and wait till it crashes back to OOBE ('Get Started' screen)
-3. Try enrolling again but the moment your chromebook says 'Enterprise Enrollment', enter recovery mode [Esc+Ref+Pwr].
-4. Enter Developer mode [Ctrl+D].
-5. Enter recovery mode again by pressing [Esc+Ref+Pwr]
-6. Plug in the prepared USB drive or SD card. GoodSilver will start in only a few seconds if you've done everything correctly. If not, turn off developer mode and try again from the start
-7. Go through setup, you should be unenrolled!!
-
 ## Credits
 
 - Emery/[emerwyi](https://github.com/emerwyi) - discovered quicksilver
